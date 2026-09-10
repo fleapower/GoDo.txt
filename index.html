@@ -10,6 +10,7 @@
       .header-bar {position: sticky; top: 0; background: white; padding: 10px; border-bottom: 1px solid #ccc;}
       .filter-bar {background: white; padding: 5px;}
       .context-bar {background: white; padding: 5px;}
+      .tag-bar {background: white; padding: 5px;}
 
       .button {
         font-size: 14px;
@@ -338,6 +339,10 @@
       </div>
       <div id="contextButtons" class="context-bar">
       </div>
+      <div class="tag-bar">
+        <button class="button" onclick="appendTagToSelectedTasks()">Add Tag</button>
+        <button class="button" onclick="removeTagFromSelectedTasks()">Remove Tag</button>
+      </div>
     </div>
     <div id="taskList"></div>
     <script>
@@ -663,6 +668,50 @@
           button.classList.add('selected');
         }
         applyFilters();
+      }
+
+      function editTagsForSelectedTasks(action) {
+        if (!selectedTasks.size) return;
+
+        const actionLabel = action === 'add' ? 'Add Tag' : 'Remove Tag';
+        const htmlContent = `
+          <h2>${actionLabel}</h2>
+          <input type="text" placeholder="Enter @context or +project" autofocus>
+          <div class="buttons">
+            <button class="confirm">${actionLabel}</button>
+            <button class="cancel">Cancel</button>
+          </div>
+        `;
+
+        showDialog(htmlContent, (tag) => {
+          const normalizedTag = tag ? tag.trim() : '';
+          if (!/^[@+]\S+$/.test(normalizedTag) || /\s/.test(normalizedTag)) {
+            return;
+          }
+
+          getOriginalIndices().forEach(index => {
+            const task = allTasks[index];
+            const tokens = task.Task.split(/(\s+)/);
+            const hasTag = tokens.some(token => token === normalizedTag);
+
+            if (action === 'add' && !hasTag) {
+              task.Task = `${task.Task.replace(/\s+$/, '')} ${normalizedTag}`;
+            } else if (action === 'remove') {
+              task.Task = tokens.filter(token => token !== normalizedTag).join('');
+            }
+          });
+
+          generateContextButtons();
+          applyFilters();
+        });
+      }
+
+      function appendTagToSelectedTasks() {
+        editTagsForSelectedTasks('add');
+      }
+
+      function removeTagFromSelectedTasks() {
+        editTagsForSelectedTasks('remove');
       }
 
       function applySearchFilter(taskText, searchTerms) {
