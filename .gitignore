@@ -1,1 +1,5 @@
-.clasprc.json
+*
+!.gitignore
+!code.gs
+!help.html
+!index.html
