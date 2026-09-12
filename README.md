@@ -22,6 +22,9 @@ The GAS should be running as a web app. The first thing you should do is click t
 
 <ins>**Change Log**</ins>
 
+<ins>3.0</ins>
+CHANGE: Cleaned up code. Improved interface.
+
 <ins>2.0</ins>  
 NEW: Implemented drag and drop  
 CHANGE: Changed some hotkeys for better user experience  
