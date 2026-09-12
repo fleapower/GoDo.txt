@@ -16,11 +16,39 @@
       color: #444;
       flex: 1;
     }
+
+    .help-icon {
+      align-items: center;
+      display: inline-flex;
+      justify-content: center;
+      min-width: 34px;
+    }
+
+    .help-icon svg {
+      height: 18px;
+      width: 18px;
+    }
+
+    .help-section-wide {
+      grid-column: 1 / -1;
+    }
+
+    .help-grid > div {
+      display: contents;
+    }
+
+    .help-code {
+      font-family: monospace;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 2px 5px;
+    }
 </style>
 
 <div style="max-width: 800px; margin: 0 auto;">
-  <h2 style="text-align: center; margin-bottom: 20px;">Godo.txt α2.0 — Keyboard Shortcuts & Help</h2>
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 500px; overflow-y: auto; padding-right: 10px;">
+  <h2 style="text-align: center; margin-bottom: 20px;">GoDo.txt 3.0 — Keyboard Shortcuts & Help</h2>
+  <div class="help-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 500px; overflow-y: auto; padding-right: 10px;">
     <div>
       <div class="section">
         <div class="section-title">Navigation</div>
@@ -34,7 +62,7 @@
         </div>
         <div class="shortcut-row">
           <span class="hotkey">Ctrl + ↑/↓</span>
-          <span class="hotkey-info">Move task up/down</span>
+          <span class="hotkey-info">Move task up/down in File sort mode</span>
         </div>
         <div class="shortcut-row">
           <span class="hotkey">Drag & Drop</span>
@@ -46,11 +74,11 @@
         </div>
         <div class="shortcut-row">
           <span class="hotkey">Ctrl + x</span>
-          <span class="hotkey-info">Cut selected task(s)</span>
+          <span class="hotkey-info">Cut selected task(s) in File sort mode</span>
         </div>
         <div class="shortcut-row">
           <span class="hotkey">Ctrl + v</span>
-          <span class="hotkey-info">Paste cut task(s) at cursor</span>
+          <span class="hotkey-info">Paste cut task(s) at the selected task in File sort mode</span>
         </div>
       </div>
 
@@ -78,7 +106,7 @@
         </div>
         <div class="shortcut-row">
           <span class="hotkey">x</span>
-          <span class="hotkey-info">Toggle task completion</span>
+          <span class="hotkey-info">Complete or uncomplete selected task(s). Valid recurring tasks advance instead of receiving an x marker.</span>
         </div>
       </div>
 
@@ -113,8 +141,8 @@
           <span class="hotkey-info">Browser find (Ctrl+F) dialog</span>
         </div>
         <div class="shortcut-row">
-          <span class="hotkey">Context Buttons</span>
-          <span class="hotkey-info">Click @context buttons to filter by list</span>
+          <span class="hotkey">No Tags</span>
+          <span class="hotkey-info">The context/project filter option for tasks with neither an @context nor a +project.</span>
         </div>
       </div>
     </div>
@@ -160,7 +188,7 @@
         <div class="section-title">Other</div>
         <div class="shortcut-row">
           <span class="hotkey">Ctrl + a</span>
-          <span class="hotkey-info">Select all tasks</span>
+          <span class="hotkey-info">Select all currently visible tasks</span>
         </div>
         <div class="shortcut-row">
           <span class="hotkey">Ctrl + c</span>
@@ -173,6 +201,110 @@
         <div class="shortcut-row">
           <span class="hotkey">?</span>
           <span class="hotkey-info">Show this help window</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">Focus</span>
+          <span class="hotkey-info">Keyboard shortcuts apply when the task page is focused, not while typing in Search or a dialog.</span>
+        </div>
+      </div>
+
+      <div class="section help-section-wide">
+        <div class="section-title">Toolbar Icons</div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="folder-open"></i></span>
+          <span class="hotkey-info">Open a file picker. Use <b>Load as Todo</b> for the active task file or <b>Set as Archive</b> for the archive file.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="refresh-cw"></i></span>
+          <span class="hotkey-info">Reload tasks from the active todo file.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="archive"></i></span>
+          <span class="hotkey-info">Move completed tasks to the designated archive. Does nothing when no archive is selected.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="list-checks"></i> <i data-lucide="circle"></i> <i data-lucide="circle-check"></i></span>
+          <span class="hotkey-info">Cycle task status filters: all, pending, and complete.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="calendar"></i> <i data-lucide="calendar-check"></i> <i data-lucide="calendar-plus"></i></span>
+          <span class="hotkey-info">Cycle date filters: all dates, due today, and due tomorrow.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon">(A) (-)</span>
+          <span class="hotkey-info">Cycle priority filters: A through D and <span class="help-code">(-)</span> for tasks without a priority.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="file-text"></i> <i data-lucide="calendar"></i> <i data-lucide="list-ordered"></i></span>
+          <span class="hotkey-info">Cycle sorting: file order, due date, and priority.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="filter-x"></i></span>
+          <span class="hotkey-info">Clear all filters and return to file order.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="list-filter"></i></span>
+          <span class="hotkey-info">Open the context/project filter and select any combination of @contexts and +projects.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey help-icon"><i data-lucide="tags"></i></span>
+          <span class="hotkey-info">Manage tags on selected tasks. Checked means all selected tasks have the tag; a hyphen means some; blank means none. Type a new @context or +project and apply it.</span>
+        </div>
+      </div>
+
+      <div class="section help-section-wide">
+        <div class="section-title">Contexts, Projects & Tags</div>
+        <div class="shortcut-row">
+          <span class="hotkey">@context</span>
+          <span class="hotkey-info">A todo.txt context, such as <span class="help-code">@home</span> or <span class="help-code">@phone</span>.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">+project</span>
+          <span class="hotkey-info">A todo.txt project, such as <span class="help-code">+Website</span> or <span class="help-code">+Personal</span>.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">Tags</span>
+          <span class="hotkey-info">Select multiple tags from the filter menu. The active selections appear below the icon row and disappear when filters are cleared.</span>
+        </div>
+      </div>
+
+      <div class="section help-section-wide">
+        <div class="section-title">Recurring Tasks</div>
+        <div class="shortcut-row">
+          <span class="hotkey">r:w05</span>
+          <span class="hotkey-info">Weekly on weekday 5, where Sunday is 1 and Saturday is 7.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">r:m15</span>
+          <span class="hotkey-info">Monthly on the 15th day.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">r:05w</span>
+          <span class="hotkey-info">Every five weeks. Use two digits for the interval.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">r:y1225</span>
+          <span class="hotkey-info">Yearly on December 25, using MMDD.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">Complete</span>
+          <span class="hotkey-info">When a valid recurring task is completed, the recurrence string stays unchanged, <span class="help-code">due:</span> advances from the actual completion date, and <span class="help-code">last:</span> records that completion date. Invalid recurrence strings behave like ordinary tasks.</span>
+        </div>
+      </div>
+
+      <div class="section help-section-wide">
+        <div class="section-title">Archive Workflow</div>
+        <div class="shortcut-row">
+          <span class="hotkey">1</span>
+          <span class="hotkey-info">Open the folder icon, then choose <b>Set as Archive</b> beside a .txt file.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">2</span>
+          <span class="hotkey-info">Click the archive icon beside Reload. Completed tasks are appended to the archive and removed from the active todo file.</span>
+        </div>
+        <div class="shortcut-row">
+          <span class="hotkey">Note</span>
+          <span class="hotkey-info">Archiving does nothing until an archive file has been designated. The active todo file and archive file must be different.</span>
         </div>
       </div>
     </div>

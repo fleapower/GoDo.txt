@@ -8,9 +8,159 @@
       .selected { background-color: #80EF80; }
 
       .header-bar {position: sticky; top: 0; background: white; padding: 10px; border-bottom: 1px solid #ccc;}
-      .filter-bar {background: white; padding: 5px;}
+      .filter-bar {
+        align-items: center;
+        background: white;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 5px;
+      }
       .context-bar {background: white; padding: 5px;}
-      .tag-bar {background: white; padding: 5px;}
+
+      .context-picker {
+        margin-left: 8px;
+        position: relative;
+      }
+
+      .context-menu {
+        background: white;
+        border: 1px solid #ccc;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+        display: none;
+        max-height: 260px;
+        min-width: 180px;
+        overflow-y: auto;
+        padding: 6px;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 10;
+      }
+
+      .context-menu.open {
+        display: block;
+      }
+
+      .context-option {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        padding: 6px;
+        white-space: nowrap;
+      }
+
+      .context-option:hover {
+        background: #f5f5f5;
+      }
+
+      .selected-context {
+        background: #e3f2fd;
+        border: 1px solid #90caf9;
+        border-radius: 12px;
+        display: inline-block;
+        margin: 2px 4px 2px 0;
+        padding: 3px 9px;
+      }
+
+      .tag-manager-list {
+        border: 1px solid #ddd;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px;
+      }
+
+      .tag-manager-option {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        padding: 6px;
+      }
+
+      .tag-manager-option:hover {
+        background: #f5f5f5;
+      }
+
+      .tag-manager-option input {
+        margin: 0;
+        width: auto;
+      }
+
+      .new-tag-row {
+        align-items: center;
+        display: flex;
+        gap: 6px;
+      }
+
+      .new-tag-row input {
+        flex: 1;
+      }
+
+      .icon-button {
+        align-items: center;
+        display: inline-flex;
+        gap: 6px;
+        justify-content: center;
+        min-height: 34px;
+        min-width: 34px;
+      }
+
+      .icon-button svg {
+        height: 16px;
+        width: 16px;
+        display: block;
+      }
+
+      .filter-bar .icon-button {
+        gap: 0;
+        height: 34px;
+        padding: 0;
+        position: relative;
+        width: 34px;
+      }
+
+      .remove-tag-icon {
+        display: inline-flex;
+        position: relative;
+      }
+
+      .remove-tag-icon::after {
+        background: currentColor;
+        content: "";
+        height: 2px;
+        left: -2px;
+        position: absolute;
+        top: 7px;
+        transform: rotate(-45deg);
+        width: 20px;
+      }
+
+      .state-mark {
+        align-items: center;
+        display: inline-flex;
+        font-family: monospace;
+        font-size: 15px;
+        height: 16px;
+        justify-content: center;
+        line-height: 1;
+        min-width: 24px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 24px;
+      }
+
+      .sr-only {
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        width: 1px;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+      }
 
       .button {
         font-size: 14px;
@@ -129,6 +279,17 @@
         border-radius: 4px;
         font-family: Arial, sans-serif;
         font-size: 16px;
+      }
+
+      .sidebar-dialog .tag-manager-option {
+        justify-content: flex-start;
+        text-align: left;
+      }
+
+      .sidebar-dialog .tag-manager-option input {
+        flex: 0 0 auto;
+        margin: 0;
+        width: auto;
       }
 
       .sidebar-dialog textarea {
@@ -303,14 +464,16 @@
       }
     </style>
     <base target="_top">
+    <script src="https://unpkg.com/lucide@1.45.0/dist/umd/lucide.js"></script>
   </head>
   <body tabindex="0">
     <div class="sync-indicator" id="syncIndicator" title="Syncing..."></div>
     <div style="display: flex; justify-content: space-between;">
       <div>
-        <h2><font face="Courier New">Godo.txt</font>
-        <button class="button" onclick="loadNewFile()">Load ToDo.txt file</button>
-        <button class="button" onclick="loadTasks()">Reload Tasks</button>
+        <h2><font face="Courier New">GoDo.txt</font>
+        <button class="button icon-button" title="Choose a todo.txt file from Google Drive" aria-label="Choose a todo.txt file from Google Drive" onclick="loadNewFile()"><i data-lucide="folder-open"></i><span class="sr-only">Choose a todo.txt file from Google Drive</span></button>
+        <button class="button icon-button" title="Reload tasks from Google Drive" aria-label="Reload tasks from Google Drive" onclick="loadTasks()"><i data-lucide="refresh-cw"></i><span class="sr-only">Reload tasks from Google Drive</span></button>
+        <button class="button icon-button" title="Move completed tasks to the designated archive file" aria-label="Move completed tasks to the designated archive file" onclick="archiveCompletedTasksFromFile()"><i data-lucide="archive"></i></button>
       </div>
       <div><h6>? for Help
       </div>
@@ -319,12 +482,17 @@
     <div id="dialogContainer"></div>
     <div id="headerContainer" class="header-bar">
       <div class="filter-bar">
-        <button class="button" id="completeButton" onclick="cycleCompleteState()">All States</button>
-        <button class="button" id="dueButton" onclick="cycleDueState()">All Dates</button>
-        <button class="button" id="priorityButton" onclick="cyclePriorityState()">All Pri</button>
-        <button class="button" id="sortButton" onclick="cycleSortState()">Sort: File</button>
-        <button class="button" onclick="clearFilters()">Clear Filters</button>
+        <button class="button icon-button" id="completeButton" title="Show all tasks" aria-label="Show all tasks" onclick="cycleCompleteState()"><i data-lucide="list-checks"></i></button>
+        <button class="button icon-button" id="dueButton" title="Show tasks with any due date" aria-label="Show tasks with any due date" onclick="cycleDueState()"><i data-lucide="calendar"></i></button>
+        <button class="button icon-button" id="priorityButton" title="Show tasks with any priority" aria-label="Show tasks with any priority" onclick="cyclePriorityState()"><i data-lucide="list"></i></button>
+        <button class="button icon-button" id="sortButton" title="Sort tasks in file order" aria-label="Sort tasks in file order" onclick="cycleSortState()"><i data-lucide="file-text"></i></button>
+        <div class="context-picker">
+          <button class="button icon-button" id="contextMenuButton" title="Select one or more contexts or projects" aria-label="Select one or more contexts or projects" aria-expanded="false" onclick="toggleContextMenu(event)"><i data-lucide="list-filter"></i></button>
+          <div id="contextMenu" class="context-menu" role="menu"></div>
+        </div>
+        <button class="button icon-button" title="Manage tags on selected tasks" aria-label="Manage tags on selected tasks" onclick="openTagManager()"><i data-lucide="tags"></i></button>
         <input type="text" id="searchBox" placeholder="Find..." oninput="applyFilters()">
+        <button class="button icon-button" title="Clear all filters and return to file order" aria-label="Clear all filters and return to file order" onclick="clearFilters()"><i data-lucide="filter-x"></i><span class="sr-only">Clear filters</span></button>
         <script>
           const searchBox = document.getElementById('searchBox');
           
@@ -337,16 +505,13 @@
           });
         </script>
       </div>
-      <div id="contextButtons" class="context-bar">
-      </div>
-      <div class="tag-bar">
-        <button class="button" onclick="appendTagToSelectedTasks()">Add Tag</button>
-        <button class="button" onclick="removeTagFromSelectedTasks()">Remove Tag</button>
+      <div id="contextButtons" class="context-bar" aria-live="polite">
       </div>
     </div>
     <div id="taskList"></div>
     <script>
       
+      let allFilterSets = [];
       let allTasks = [];
       let lastModifiedTime = null;
       let lastSavedTime = null;
@@ -380,13 +545,86 @@
                   .replace(/due:(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/gi, (match, day) => `due:${getNextDayOfWeekDate(day)}`);
       }
 
+      function formatTaskDate(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      }
+
+      function advanceRecurringTask(taskText) {
+        const recurrenceMatch = taskText.match(/\br:([^\s]+)/);
+        if (!recurrenceMatch) return null;
+
+        const existingDueMatch = taskText.match(/\bdue:\d{4}-\d{2}-\d{2}/);
+        const completionDate = getTodayDate();
+        const nextDue = new Date(`${completionDate}T00:00:00`);
+        const recurrence = recurrenceMatch[1];
+        const intervalMatch = recurrence.match(/^(\d{2})([dwmy])$/);
+
+        if (intervalMatch) {
+          const interval = Number(intervalMatch[1]);
+          switch (intervalMatch[2].toLowerCase()) {
+            case 'd':
+              nextDue.setDate(nextDue.getDate() + interval);
+              break;
+            case 'w':
+              nextDue.setDate(nextDue.getDate() + interval * 7);
+              break;
+            case 'm':
+              nextDue.setMonth(nextDue.getMonth() + interval);
+              break;
+            case 'y':
+              nextDue.setFullYear(nextDue.getFullYear() + interval);
+              break;
+            default:
+              return null;
+          }
+        } else {
+          const weeklyMatch = recurrence.match(/^w(0[1-7])$/);
+          const monthlyMatch = recurrence.match(/^m(0[1-9]|[12]\d|3[01])$/);
+          const yearlyMatch = recurrence.match(/^y(\d{2})(\d{2})$/);
+
+          if (weeklyMatch) {
+            const targetDay = Number(weeklyMatch[1]) - 1;
+            const daysUntilTarget = (targetDay - nextDue.getDay() + 7) % 7 || 7;
+            nextDue.setDate(nextDue.getDate() + daysUntilTarget);
+          } else if (monthlyMatch) {
+            const targetDate = Number(monthlyMatch[1]);
+            nextDue.setMonth(nextDue.getMonth() + (nextDue.getDate() >= targetDate ? 1 : 0), targetDate);
+          } else if (yearlyMatch) {
+            const targetMonth = Number(yearlyMatch[1]) - 1;
+            const targetDate = Number(yearlyMatch[2]);
+            const targetCalendarDate = new Date(2000, targetMonth, targetDate);
+            if (targetCalendarDate.getMonth() !== targetMonth || targetCalendarDate.getDate() !== targetDate) {
+              return null;
+            }
+            const nextYear = nextDue.getMonth() > targetMonth ||
+              (nextDue.getMonth() === targetMonth && nextDue.getDate() >= targetDate);
+            nextDue.setFullYear(nextDue.getFullYear() + (nextYear ? 1 : 0), targetMonth, targetDate);
+          } else {
+            return null;
+          }
+        }
+
+        const nextDueText = formatTaskDate(nextDue);
+        let updatedTask = taskText.replace(/\bdue:\d{4}-\d{2}-\d{2}/, `due:${nextDueText}`);
+        if (!existingDueMatch) updatedTask = `${updatedTask} due:${nextDueText}`;
+
+        if (/\blast:\d{4}-\d{2}-\d{2}/.test(updatedTask)) {
+          updatedTask = updatedTask.replace(/\blast:\d{4}-\d{2}-\d{2}/, `last:${completionDate}`);
+        } else {
+          updatedTask = `${updatedTask} last:${completionDate}`;
+        }
+
+        return updatedTask;
+      }
+
       function toggleCompletion(selectedTasks) {
         const todayDate = getTodayDate();
         selectedTasks.forEach(task => {
           if (task.Task.startsWith('x ')) {
             task.Task = task.Task.replace(/^x \d{4}-\d{2}-\d{2} /, '');
           } else {
-            task.Task = `x ${todayDate} ${task.Task}`;
+            const recurringTask = advanceRecurringTask(task.Task);
+            task.Task = recurringTask || `x ${todayDate} ${task.Task}`;
           }
         });
       }
@@ -483,6 +721,7 @@
                 }
               }
             });
+            decorateDialogButtons(document.querySelector('.sidebar-dialog'));
           }, 0);
         }
       }
@@ -618,25 +857,80 @@
       
       function cyclePriorityState() {
         updateValidPriorities(); // Update priorities before cycling
-        const states = ["All Pri", ...validPriorities.map(p => `(${p})`)];
+        const states = ["All Pri", "(A)", "(B)", "(C)", "(D)", "(-)"];
         const currentIndex = states.indexOf(priorityState);
         priorityState = states[(currentIndex + 1) % states.length];
-        document.getElementById('priorityButton').textContent = priorityState;
+        setFilterButtonState('priorityButton', priorityState === 'All Pri' ? 'list' : priorityState, `Filter by priority ${priorityState}`);
         applyFilters();
       }
 
       function cycleCompleteState() {
         const states = ["All States", "Pending", "Complete"];  // Swapped Pending and Complete
         completeState = states[(states.indexOf(completeState) + 1) % 3];
-        document.getElementById('completeButton').textContent = completeState;
+        const stateIcons = {
+          "All States": ['list-checks', 'Show all tasks'],
+          "Pending": ['circle', 'Show pending tasks'],
+          "Complete": ['circle-check', 'Show completed tasks']
+        };
+        setFilterButtonState('completeButton', stateIcons[completeState][0], stateIcons[completeState][1]);
         applyFilters();
       }
 
       function cycleDueState() {
         const states = ["All Dates", "Due Today", "Due Tomorrow"];
         dueState = states[(states.indexOf(dueState) + 1) % 3];
-        document.getElementById('dueButton').textContent = dueState;
+        const dueIcons = {
+          "All Dates": ['calendar', 'Show tasks with any due date'],
+          "Due Today": ['calendar-check', 'Show tasks due today'],
+          "Due Tomorrow": ['calendar-plus', 'Show tasks due tomorrow']
+        };
+        setFilterButtonState('dueButton', dueIcons[dueState][0], dueIcons[dueState][1]);
         applyFilters();
+      }
+
+      function setFilterButtonState(buttonId, state, description) {
+        const button = document.getElementById(buttonId);
+        if (!button) return;
+        button.title = description;
+        button.setAttribute('aria-label', description);
+        const existingIcon = button.querySelector('[data-lucide]');
+        if (existingIcon) existingIcon.remove();
+        const existingMark = button.querySelector('.state-mark');
+        if (existingMark) existingMark.remove();
+        if (state.startsWith('(')) {
+          const mark = document.createElement('span');
+          mark.className = 'state-mark';
+          mark.textContent = state;
+          button.prepend(mark);
+        } else {
+          const icon = document.createElement('i');
+          icon.dataset.lucide = state;
+          button.prepend(icon);
+          if (window.lucide) lucide.createIcons({ attrs: { 'aria-hidden': 'true' } });
+        }
+      }
+
+      function updateFilterButtonIcons() {
+        const stateIcons = {
+          "All States": ['list-checks', 'Show all tasks'],
+          "Pending": ['circle', 'Show pending tasks'],
+          "Complete": ['circle-check', 'Show completed tasks']
+        };
+        const dueIcons = {
+          "All Dates": ['calendar', 'Show tasks with any due date'],
+          "Due Today": ['calendar-check', 'Show tasks due today'],
+          "Due Tomorrow": ['calendar-plus', 'Show tasks due tomorrow']
+        };
+        const sortIcons = {
+          file: ['file-text', 'Sort tasks in file order'],
+          date: ['calendar', 'Sort tasks by due date'],
+          priority: ['list-ordered', 'Sort tasks by priority']
+        };
+
+        setFilterButtonState('completeButton', stateIcons[completeState][0], stateIcons[completeState][1]);
+        setFilterButtonState('dueButton', dueIcons[dueState][0], dueIcons[dueState][1]);
+        setFilterButtonState('priorityButton', priorityState === 'All Pri' ? 'list' : priorityState, `Filter by priority ${priorityState}`);
+        setFilterButtonState('sortButton', sortIcons[currentSortState][0], sortIcons[currentSortState][1]);
       }
 
       function updateValidPriorities() {
@@ -650,68 +944,169 @@
         // Update the priority button options
         const priorityButton = document.getElementById('priorityButton');
         if (priorityButton) {
-          const currentState = priorityButton.textContent;
-          if (!["All Pri", ...validPriorities.map(p => `(${p})`)].includes(currentState)) {
-            priorityButton.textContent = "All Pri";
+          if (!["All Pri", "(A)", "(B)", "(C)", "(D)", "(-)"].includes(priorityState)) {
+            setFilterButtonState('priorityButton', 'list', 'Show all priority levels');
             priorityState = "All Pri";
           }
         }
       }
 
       function toggleContextFilter(context) {
-        const button = document.querySelector(`.context-button[data-context="${context}"]`);
         if (activeContexts.has(context)) {
           activeContexts.delete(context);
-          button.classList.remove('selected');
         } else {
           activeContexts.add(context);
-          button.classList.add('selected');
         }
+        syncContextFilterControls();
         applyFilters();
       }
 
-      function editTagsForSelectedTasks(action) {
+      function toggleContextMenu(event) {
+        event.stopPropagation();
+        const menu = document.getElementById('contextMenu');
+        const button = document.getElementById('contextMenuButton');
+        const isOpen = menu.classList.toggle('open');
+        button.setAttribute('aria-expanded', String(isOpen));
+      }
+
+      function syncContextFilterControls() {
+        const menu = document.getElementById('contextMenu');
+        const indicators = document.getElementById('contextButtons');
+        if (!menu || !indicators) return;
+
+        menu.querySelectorAll('input[type="checkbox"]').forEach(input => {
+          input.checked = activeContexts.has(input.value);
+        });
+
+        indicators.innerHTML = '';
+        if (!activeContexts.size) {
+          indicators.style.display = 'none';
+          return;
+        }
+
+        indicators.style.display = 'block';
+        Array.from(activeContexts).sort((left, right) => {
+          const leftType = left.startsWith('@') ? 0 : 1;
+          const rightType = right.startsWith('@') ? 0 : 1;
+          return leftType - rightType || left.localeCompare(right);
+        }).forEach(context => {
+          const indicator = document.createElement('span');
+          indicator.className = 'selected-context';
+          indicator.textContent = context;
+          indicators.appendChild(indicator);
+        });
+      }
+
+      let tagManagerSelectedIndices = [];
+
+      function openTagManager() {
         if (!selectedTasks.size) return;
 
-        const actionLabel = action === 'add' ? 'Add Tag' : 'Remove Tag';
+        tagManagerSelectedIndices = getOriginalIndices();
         const htmlContent = `
-          <h2>${actionLabel}</h2>
-          <input type="text" placeholder="Enter @context or +project" autofocus>
+          <h2>Manage Tags</h2>
+          <p>Select tags to add or remove from the selected tasks.</p>
+          <div class="new-tag-row">
+            <input id="newTagInput" type="text" placeholder="Create @context or +project">
+            <button type="button" id="createTagButton" class="icon-button" title="Add a new tag" aria-label="Add a new tag"><i data-lucide="plus"></i></button>
+          </div>
+          <div id="tagManagerList" class="tag-manager-list"></div>
           <div class="buttons">
-            <button class="confirm">${actionLabel}</button>
+            <button class="confirm">Apply</button>
             <button class="cancel">Cancel</button>
           </div>
         `;
 
-        showDialog(htmlContent, (tag) => {
-          const normalizedTag = tag ? tag.trim() : '';
-          if (!/^[@+]\S+$/.test(normalizedTag) || /\s/.test(normalizedTag)) {
-            return;
-          }
-
-          getOriginalIndices().forEach(index => {
-            const task = allTasks[index];
-            const tokens = task.Task.split(/(\s+)/);
-            const hasTag = tokens.some(token => token === normalizedTag);
-
-            if (action === 'add' && !hasTag) {
-              task.Task = `${task.Task.replace(/\s+$/, '')} ${normalizedTag}`;
-            } else if (action === 'remove') {
-              task.Task = tokens.filter(token => token !== normalizedTag).join('');
-            }
-          });
-
+        showDialog(htmlContent, () => {
+          applyTagManagerChanges(tagManagerSelectedIndices);
           generateContextButtons();
           applyFilters();
         });
+
+        populateTagManager();
+        document.getElementById('createTagButton').onclick = createTagManagerOption;
+        document.getElementById('newTagInput').addEventListener('keydown', event => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            createTagManagerOption();
+          }
+        });
       }
 
-      function appendTagToSelectedTasks() {
-        editTagsForSelectedTasks('add');
+      function getAllTaskTags() {
+        const tags = new Set();
+        allTasks.forEach(task => {
+          const matches = task.Task.match(/(?:^|\s)([@+]\S+)/g) || [];
+          matches.forEach(tag => tags.add(tag.trim()));
+        });
+        return Array.from(tags).sort((left, right) => {
+          const leftType = left.startsWith('@') ? 0 : 1;
+          const rightType = right.startsWith('@') ? 0 : 1;
+          return leftType - rightType || left.localeCompare(right);
+        });
       }
 
-      function removeTagFromSelectedTasks() {
-        editTagsForSelectedTasks('remove');
+      function populateTagManager() {
+        const list = document.getElementById('tagManagerList');
+        if (!list) return;
+        list.innerHTML = '';
+
+        getAllTaskTags().forEach(tag => {
+          const count = tagManagerSelectedIndices.filter(index => {
+            return allTasks[index].Task.split(/\s+/).includes(tag);
+          }).length;
+          const option = document.createElement('label');
+          option.className = 'tag-manager-option';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = tag;
+          checkbox.checked = count === tagManagerSelectedIndices.length;
+          checkbox.indeterminate = count > 0 && count < tagManagerSelectedIndices.length;
+          checkbox.dataset.initialState = checkbox.indeterminate ? 'some' : (checkbox.checked ? 'all' : 'none');
+          option.appendChild(checkbox);
+          option.appendChild(document.createTextNode(tag));
+          list.appendChild(option);
+        });
+      }
+
+      function createTagManagerOption() {
+        const input = document.getElementById('newTagInput');
+        const tag = input.value.trim();
+        if (!/^[@+]\S+$/.test(tag) || /\s/.test(tag)) return;
+
+        const existing = Array.from(document.querySelectorAll('#tagManagerList input')).some(option => option.value === tag);
+        if (!existing) {
+          const option = document.createElement('label');
+          option.className = 'tag-manager-option';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = tag;
+          checkbox.checked = true;
+          checkbox.dataset.initialState = 'none';
+          option.appendChild(checkbox);
+          option.appendChild(document.createTextNode(tag));
+          document.getElementById('tagManagerList').appendChild(option);
+        }
+        input.value = '';
+      }
+
+      function applyTagManagerChanges(selectedIndices) {
+        document.querySelectorAll('#tagManagerList input[type="checkbox"]').forEach(checkbox => {
+          const initialState = checkbox.dataset.initialState;
+          const shouldAdd = checkbox.checked && (initialState === 'none' || initialState === 'some');
+          const shouldRemove = !checkbox.checked && (initialState === 'all' || initialState === 'some');
+          if (!shouldAdd && !shouldRemove) return;
+
+          selectedIndices.forEach(index => {
+            const task = allTasks[index];
+            const tokens = task.Task.split(/(\s+)/);
+            if (shouldAdd && !tokens.some(token => token === checkbox.value)) {
+              task.Task = `${task.Task.replace(/\s+$/, '')} ${checkbox.value}`;
+            } else if (shouldRemove) {
+              task.Task = tokens.filter(token => token !== checkbox.value).join('');
+            }
+          });
+        });
       }
 
       function applySearchFilter(taskText, searchTerms) {
@@ -772,19 +1167,19 @@
         switch (currentSortState) {
           case 'file':
             sortTasksByDueDate();
-            sortButton.textContent = 'Sort: Date';
+            setFilterButtonState('sortButton', 'calendar', 'Sort tasks by due date');
             currentSortState='date';
             displaySortedTasks();
             break;
           case 'date':
             sortTasksByPriority();
-            sortButton.textContent = 'Sort: Priority';
+            setFilterButtonState('sortButton', 'list-ordered', 'Sort tasks by priority');
             currentSortState='priority';
             displaySortedTasks();
             break;
           case 'priority':
             currentSortState = 'file';
-            sortButton.textContent = 'Sort: File';
+            setFilterButtonState('sortButton', 'file-text', 'Sort tasks in file order');
             currentSortState='file';
             applyFilters();
             break;
@@ -839,20 +1234,12 @@
         dueState = filterSet.dueState || "All Dates";
         priorityState = filterSet.priorityState || "All Pri";
         completeState = filterSet.completeState || "All States";
-        activeContexts = new Set(filterSet.activeContexts);
+        activeContexts = new Set((filterSet.activeContexts || []).map(context => context === 'No Lists' ? 'No Tags' : context));
         
-        document.getElementById('dueButton').textContent = dueState;
-        document.getElementById('priorityButton').textContent = priorityState;
-        document.getElementById('completeButton').textContent = completeState;
+        updateFilterButtonIcons();
         document.getElementById('searchBox').value = filterSet.searchQuery;
         
-        // Update context button states to match loaded filter
-        const contextButtons = document.getElementsByClassName('context-button');
-        Array.from(contextButtons).forEach(button => {
-          if (activeContexts.has(button.dataset.context)) {
-            button.classList.add('selected');
-          }
-        });
+        syncContextFilterControls();
         
         applyFilters();
       }
@@ -862,16 +1249,10 @@
         priorityState = "All Pri";
         completeState = "All States";
         currentSortState = "file";
-        document.getElementById('dueButton').textContent = "All Dates";
-        document.getElementById('priorityButton').textContent = "All Pri";
-        document.getElementById('completeButton').textContent = "All States";
-        document.getElementById('sortButton').textContent = "Sort: File";
+        updateFilterButtonIcons();
         document.getElementById('searchBox').value = '';
-        const contextButtons = document.getElementsByClassName('context-button');
-        Array.from(contextButtons).forEach(button => {
-          button.classList.remove('selected');
-        });
         activeContexts.clear();
+        syncContextFilterControls();
         applyFilters();
       }
 
@@ -884,6 +1265,15 @@
             loadFilterSet('1');  // This will trigger applyFilters()
           })
         .getTasksAndModifiedTime();
+      }
+
+      function archiveCompletedTasksFromFile() {
+        google.script.run
+          .withSuccessHandler(result => {
+            if (result.archived > 0) loadTasks();
+          })
+          .withFailureHandler(error => console.error('Error archiving tasks:', error))
+          .archiveCompletedTasks();
       }
 
       function displayTasks(tasks) {
@@ -901,32 +1291,40 @@
       }
 
       function generateContextButtons() {
-        const contextButtons = document.getElementById('contextButtons');
+        const contextMenu = document.getElementById('contextMenu');
         const contexts = new Set();
         allTasks.forEach(task => {
-          const match = task.Task.match(/ @\w+/g);
-          if (match) {
-            match.forEach(context => contexts.add(context.trim()));
-          }
+          const matches = task.Task.match(/(?:^|\s)([@+]\S+)/g) || [];
+          matches.forEach(tag => contexts.add(tag.trim()));
         });
-        contextButtons.innerHTML = '';
+        contextMenu.innerHTML = '';
 
-        // Add "No Lists" button
-        const noContextsButton = document.createElement('button');
-        noContextsButton.className = 'context-button';
-        noContextsButton.textContent = 'No Lists';
-        noContextsButton.dataset.context = 'No Lists';
-        noContextsButton.onclick = () => toggleContextFilter('No Lists');
-        contextButtons.appendChild(noContextsButton);
-
-        Array.from(contexts).sort().forEach(context => {
-          const button = document.createElement('button');
-          button.className = 'context-button';
-          button.textContent = context;
-          button.dataset.context = context;
-          button.onclick = () => toggleContextFilter(context);
-          contextButtons.appendChild(button);
+        const options = ['No Tags', ...Array.from(contexts).sort((left, right) => {
+          const leftType = left.startsWith('@') ? 0 : 1;
+          const rightType = right.startsWith('@') ? 0 : 1;
+          return leftType - rightType || left.localeCompare(right);
+        })];
+        options.forEach(context => {
+          const label = document.createElement('label');
+          label.className = 'context-option';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = context;
+          checkbox.onchange = () => {
+            if (checkbox.checked) {
+              activeContexts.add(context);
+            } else {
+              activeContexts.delete(context);
+            }
+            syncContextFilterControls();
+            applyFilters();
+          };
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(context));
+          contextMenu.appendChild(label);
         });
+
+        syncContextFilterControls();
       }
 
       // Helper function to extract priority from task text
@@ -1087,11 +1485,12 @@
               (completeState === "Complete" && isComplete) ||
               (completeState === "Pending" && !isComplete);
             
-            const matchesPriority = priorityState === "All Pri" || 
+            const matchesPriority = priorityState === "All Pri" ||
+              (priorityState === "(-)" && !taskPriority) ||
               (taskPriority && `(${taskPriority})` === priorityState);
             
             const matchesContexts = Array.from(activeContexts).length === 0 || Array.from(activeContexts).some(context => {
-              if (context === 'No Lists') return !taskText.match(/ @\w+/);
+              if (context === 'No Tags') return !taskText.match(/(?:^|\s)[@+]\S+/);
               return taskText.includes(context);
             });
 
@@ -1480,46 +1879,6 @@
         }
       }
 
-      function initCalendar(container) {
-        const calendar = document.createElement('div');
-        calendar.className = 'calendar';
-        container.appendChild(calendar);
-        
-        const date = new Date();
-        const currentMonth = date.getMonth();
-        const currentYear = date.getFullYear();
-        
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-          "July", "August", "September", "October", "November", "December"];
-          
-        calendar.innerHTML = `
-          <div class="calendar-header">
-            <button class="prev-month">&lt;</button>
-            <span>${monthNames[currentMonth]} ${currentYear}</span>
-            <button class="next-month">&gt;</button>
-          </div>
-          <div class="calendar-grid">
-            ${generateCalendarDays(currentYear, currentMonth)}
-          </div>
-        `;
-        
-        // Add event listeners for navigation and date selection
-        const prevButton = calendar.querySelector('.prev-month');
-        const nextButton = calendar.querySelector('.next-month');
-        
-        prevButton.addEventListener('click', () => {
-          date.setMonth(date.getMonth() - 1);
-          updateCalendar(calendar, date);
-        });
-        
-        nextButton.addEventListener('click', () => {
-          date.setMonth(date.getMonth() + 1);
-          updateCalendar(calendar, date);
-        });
-        
-        return calendar;
-      }
-
       function generateCalendarDays(year, month) {
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
@@ -1557,6 +1916,48 @@
           generateCalendarDays(date.getFullYear(), date.getMonth());
       }
 
+      function decorateDialogButtons(container) {
+        const iconByLabel = {
+          'Save': ['save', 'Save this task'],
+          'Add': ['plus', 'Add this task'],
+          'Set Date': ['calendar-check', 'Set the due date'],
+          'Delete': ['trash-2', 'Delete the selected task or tasks'],
+          'Set Priority': ['list-checks', 'Set the priority'],
+          'Delay': ['clock-3', 'Delay the due date'],
+          'Apply': ['check', 'Apply tag changes'],
+          'OK': ['check', 'Confirm and close'],
+          'Save Anyway': ['save', 'Save despite the external file change'],
+          'Select File': ['folder-open', 'Use the selected todo.txt file'],
+          'Create New Todo File': ['file-plus', 'Create a new todo.txt file'],
+          'Create': ['file-plus', 'Create the todo.txt file']
+        };
+
+        container.querySelectorAll('button').forEach(button => {
+          if (button.classList.contains('prev-month') || button.classList.contains('next-month')) {
+            const icon = button.classList.contains('prev-month') ? 'chevron-left' : 'chevron-right';
+            const label = button.classList.contains('prev-month') ? 'Show the previous month' : 'Show the next month';
+            button.textContent = '';
+            button.innerHTML = `<i data-lucide="${icon}"></i><span class="sr-only">${label}</span>`;
+            button.title = label;
+            button.setAttribute('aria-label', label);
+            button.classList.add('icon-button');
+            return;
+          }
+
+          const label = button.textContent.trim();
+          const isCancel = button.classList.contains('cancel');
+          const iconData = isCancel ? ['x', 'Cancel and close'] : iconByLabel[label];
+          if (!iconData || button.querySelector('[data-lucide]')) return;
+
+          button.textContent = '';
+          button.innerHTML = `<i data-lucide="${iconData[0]}"></i><span class="sr-only">${iconData[1]}</span>`;
+          button.title = iconData[1];
+          button.setAttribute('aria-label', iconData[1]);
+          button.classList.add('icon-button');
+        });
+
+        if (window.lucide) lucide.createIcons();
+      }
 
       function showDialog(htmlContent, callback) {
         const dialogContainer = document.getElementById('dialogContainer');
@@ -1567,6 +1968,7 @@
         `;
           
         const dialog = dialogContainer.querySelector('.sidebar-dialog');
+        decorateDialogButtons(dialog);
         setTimeout(() => dialog.classList.add('active'), 10);
 
         const closeDialog = () => {
@@ -1678,6 +2080,7 @@
                 }
               }
             });
+            decorateDialogButtons(dialog);
           }, 0);
         }
 
@@ -1775,13 +2178,17 @@
                   Modified: ${new Date(file.date).toLocaleString()}
                   (${(file.size / 1024).toFixed(1)} KB)
                 </span>
+                <div class="file-actions">
+                  <button type="button" class="load-file-button" data-id="${file.id}">Load as Todo</button>
+                  <button type="button" class="archive-file-button" data-id="${file.id}">Set as Archive</button>
+                </div>
               </div>
             `).join('') : '';
             
             const htmlContent = `
               <h2>Todo Files</h2>
               ${files && files.length > 0 ? `
-                <p>Select an existing todo file or create a new one:</p>
+                <p>Load a todo file or designate an archive file:</p>
                 <div class="file-browser">
                   ${fileList}
                 </div>
@@ -1792,9 +2199,6 @@
                 <button class="button new-file-button">Create New Todo File</button>
               </div>
               <div class="buttons">
-                ${files && files.length > 0 ? `
-                  <button class="confirm" disabled>Select File</button>
-                ` : ''}
                 <button class="cancel">Cancel</button>
               </div>
             `;
@@ -1942,26 +2346,27 @@
             
             showDialog(htmlContent, () => {});
 
-            // Get dialog elements after the dialog is shown
             const dialog = document.querySelector('.sidebar-dialog');
-            const fileItems = dialog.querySelectorAll('.file-item');
-            const confirmButton = dialog.querySelector('.confirm');
             const newFileButton = dialog.querySelector('.new-file-button');
-            let selectedFileId = null;
 
-            // Add click handlers for file selection
-            fileItems.forEach(item => {
-              item.addEventListener('click', () => {
-                fileItems.forEach(f => f.classList.remove('selected'));
-                item.classList.add('selected');
-                selectedFileId = item.dataset.id;
-                if (confirmButton) confirmButton.disabled = false;
-              });
+            dialog.querySelectorAll('.load-file-button').forEach(button => {
+              button.addEventListener('click', () => handleFileSelection(button.dataset.id));
+            });
 
-              item.addEventListener('dblclick', () => {
-                if (item.dataset.id) {
-                  handleFileSelection(item.dataset.id);
-                }
+            dialog.querySelectorAll('.archive-file-button').forEach(button => {
+              button.addEventListener('click', () => {
+                google.script.run
+                  .withSuccessHandler(success => {
+                    if (success) {
+                      showDialog(`
+                        <h2>Archive Selected</h2>
+                        <p>This file is now the designated archive.</p>
+                        <div class="buttons"><button class="confirm">OK</button></div>
+                      `, () => {});
+                    }
+                  })
+                  .withFailureHandler(error => console.error('Error setting archive file:', error))
+                  .setArchiveFileId(button.dataset.id);
               });
             });
 
@@ -1970,14 +2375,6 @@
               newFileButton.addEventListener('click', handleFileCreation);
             }
 
-            // Update confirm button handler
-            if (confirmButton) {
-              confirmButton.onclick = () => {
-                if (selectedFileId) {
-                  handleFileSelection(selectedFileId);
-                }
-              };
-            }
           })
           .withFailureHandler((error) => {
             const errorContent = `
@@ -2276,7 +2673,19 @@
       }
 
       // Start listening for keyboard input
+      if (window.lucide) lucide.createIcons();
       listenForKeyboardInput();
+
+      document.addEventListener('click', function(event) {
+        const picker = event.target.closest('.context-picker');
+        if (picker) return;
+        const menu = document.getElementById('contextMenu');
+        const button = document.getElementById('contextMenuButton');
+        if (menu && menu.classList.contains('open')) {
+          menu.classList.remove('open');
+          button.setAttribute('aria-expanded', 'false');
+        }
+      });
 
       document.addEventListener('DOMContentLoaded', function() {
         google.script.run
@@ -2308,11 +2717,6 @@
 	  
 	    // Add this line to focus the page on load
 	    window.onload = () => document.body.focus();
-
-      // This listens for when the page is focused to load the latest version of the task list to try to prevent conflicts.
-      // window.addEventListener('focus', function() {
-      //  loadTasks();
-      // });
 
     </script>
   </body>

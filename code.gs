@@ -1,11 +1,11 @@
-// α2.0
+// 3.0
 
 function doGet() {
   try {
     return HtmlService.createTemplateFromFile('index')
       .evaluate()
       .setFaviconUrl('https://drive.google.com/uc?export=download&id=1Ae09tWRB7q9HhMX4lcuLB7khj-ckWVh1&format=png')
-      .setTitle('Godo.txt');
+      .setTitle('GoDo.txt');
   } catch (e) {
     return HtmlService.createHtmlOutput(`
       <h2>Error</h2>
@@ -33,7 +33,7 @@ function listTodoFiles() {
       
       Logger.log('Processing file: ' + fileName);
 
-      if (fileName.includes('todo') && fileName.endsWith('.txt')) {
+      if (fileName.endsWith('.txt')) {
         todoFiles.push({
           id: file.getId(),
           name: file.getName(),
@@ -106,6 +106,37 @@ function setupFileId(fileId) {
     return true;
   }
   return false;
+}
+
+function getStoredArchiveFileId() {
+  return PropertiesService.getUserProperties().getProperty('ARCHIVE_FILE_ID');
+}
+
+function setArchiveFileId(fileId) {
+  if (!validateFileId(fileId)) return false;
+  PropertiesService.getUserProperties().setProperty('ARCHIVE_FILE_ID', fileId);
+  return true;
+}
+
+function archiveCompletedTasks() {
+  const todoFileId = getStoredFileId();
+  const archiveFileId = getStoredArchiveFileId();
+  if (!todoFileId || !archiveFileId || todoFileId === archiveFileId) {
+    return { archived: 0 };
+  }
+
+  const todoFile = DriveApp.getFileById(todoFileId);
+  const archiveFile = DriveApp.getFileById(archiveFileId);
+  const todoLines = todoFile.getBlob().getDataAsString().split(/\r?\n/);
+  const completedTasks = todoLines.filter(line => line.startsWith('x '));
+  if (!completedTasks.length) return { archived: 0 };
+
+  const remainingTasks = todoLines.filter(line => !line.startsWith('x '));
+  const archiveContent = archiveFile.getBlob().getDataAsString();
+  const separator = archiveContent && !archiveContent.endsWith('\n') ? '\n' : '';
+  archiveFile.setContent(archiveContent + separator + completedTasks.join('\n') + '\n');
+  todoFile.setContent(remainingTasks.join('\n'));
+  return { archived: completedTasks.length };
 }
 
 // Task Management Functions
